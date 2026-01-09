@@ -49,6 +49,26 @@ def analyze_image_with_gemini(image_path, pollution_type="water"):
 
     prompt = f"""
     You are an automated environmental sensor system.
+    
+    STEP 1: VALIDATION
+    Determine if the image is relevant to "{pollution_type}".
+    - If pollution_type is "water": The image MUST contain a water body (river, lake, ocean, pond, puddle, sewage, etc.).
+    - If pollution_type is "air": The image MUST contain sky, atmosphere, industrial smoke, smog, or open outdoor views.
+    
+    IF THE IMAGE IS NOT OF WATER OR AIR:
+    Return exactly this JSON and STOP:
+    {{
+        "classification": "Invalid",
+        "confidence": 100,
+        "probabilities": {{
+            "Clean": 0,
+            "Little Polluted": 0,
+            "Highly Polluted": 0
+        }},
+        "analysis": ["The image is not a recognized {pollution_type} body.", "Analysis aborted."]
+    }}
+
+    STEP 2: POLLUTION ANALYSIS (Only if Valid)
     Analyze the ENTIRE provided {pollution_type} image to detect pollution levels.
     
     CRITICAL INSTRUCTIONS:
@@ -112,6 +132,16 @@ def analyze_image_with_gemini(image_path, pollution_type="water"):
 
         # Extract values
         pred_class = data.get("classification", "Little Polluted")
+        
+        # Handle Invalid Image Case
+        if pred_class == "Invalid":
+            return {
+                "prediction": "Not a Water/Air Body",
+                "class_name": "Medium",
+                "probs": {k: 0.0 for k in CLASS_NAMES},
+                "analysis": data.get("analysis", ["Image content does not match the selected pollution type."])
+            }
+
         # Validate class
         if pred_class not in CLASS_NAMES:
             # Simple fuzzy match or fallback
