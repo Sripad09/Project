@@ -1,0 +1,44 @@
+# Virtual environments
+venv/
+venv_tf/
+venv310/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor files
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Temporary or generated files
+temp_img.jpg
+*.tmp
+
+# Static uploads (only if not needed)
+static/uploads/
+
+# Data (optional: include only if required)
+# data/
+data_processed/
+
+# Large notebooks (optional)
+notebooks/
+
+# Render build folders (if created later)
+build/
+dist/

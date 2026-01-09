@@ -1,0 +1,13 @@
+numpy<2
+pandas
+scikit-learn
+opencv-python-headless
+matplotlib
+seaborn
+albumentations
+tqdm
+tensorflow==2.15.0
+Flask==2.2.5
+Pillow
+gunicorn
+google-generativeai
