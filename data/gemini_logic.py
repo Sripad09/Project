@@ -32,10 +32,10 @@ def analyze_image_with_gemini(image_path, pollution_type="water"):
 
     if not API_KEY:
         return {
-            "prediction": "Gemini Key Missing",
+            "prediction": "MODEL NOT FOUND",
             "class_name": "Medium",
             "probs": probs,
-            "analysis": ["Error: GEMINI_API_KEY not found."]
+            "analysis": ["Error: MODEL NOT FOUND."]
         }
 
     # Use a vision-capable model
@@ -48,15 +48,22 @@ def analyze_image_with_gemini(image_path, pollution_type="water"):
         model = genai.GenerativeModel("gemini-pro-vision")
 
     prompt = f"""
-    You are an expert environmental analyst.
-    Analyze this {pollution_type} image for pollution levels.
+    You are an automated environmental sensor system.
+    Analyze the ENTIRE provided {pollution_type} image to detect pollution levels.
+    
+    CRITICAL INSTRUCTIONS:
+    - FOCUS ONLY ON POLLUTION INDICATORS (turbidity, unnatural color, waste, oil, smoke, smog).
+    - DO NOT describe the artistic style, camera angle, or scenery unless it directly relates to pollution.
+    - DO NOT use phrases like "The image shows", "I can see", or "Gemini".
+    - Output must be purely technical and objective.
+
     Classify the pollution level into exactly one of these categories: "Clean", "Little Polluted", "Highly Polluted".
     
     Requirements:
     1. Determine the Classification ("Clean", "Little Polluted", "Highly Polluted").
     2. Provide a confidence percentage (0-100) for that classification.
     3. Estimate probabilities for all three categories so they likely sum to 100.
-    4. Provide 3-5 short, bullet-point style observations explaining the decision (e.g., color, turbidity, floating debris).
+    4. Provide 3-5 short, direct, technical observations explaining the decision.
 
     Return ONLY valid JSON with this exact structure:
     {{
@@ -68,9 +75,9 @@ def analyze_image_with_gemini(image_path, pollution_type="water"):
             "Highly Polluted": 0.5
         }},
         "analysis": [
-            "Water appears clear blue with no visible debris.",
-            "No signs of algae bloom or oil slick.",
-            "Visual transparency suggests low turbidity."
+            "Water clarity is high with distinct visibility of riverbed details.",
+            "Absence of surface debris or oily sheen.",
+            "Natural water coloration with no signs of chemical turbidity."
         ]
     }}
     """
@@ -95,7 +102,13 @@ def analyze_image_with_gemini(image_path, pollution_type="water"):
             try:
                 data = ast.literal_eval(content)
             except:
-                raise ValueError(f"Could not parse Gemini response: {content}")
+                # If parsing fails, it's likely a refusal or plain text explanation
+                return {
+                    "prediction": "Try Again",
+                    "class_name": "Medium",
+                    "probs": probs,
+                    "analysis": [content]
+                }
 
         # Extract values
         pred_class = data.get("classification", "Little Polluted")
